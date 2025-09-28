@@ -83,9 +83,12 @@ export const getCurrentUser = (req, res) => {
   const api = new ApiResponse(res);
   if (!req.user) return api.error("User not found", 404);
 
+  // Match the same format as login/register responses
   api.success("Current user fetched successfully", {
-    id: req.user._id,
-    name: req.user.name,
-    email: req.user.email
+    user: {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+    },
   });
 };
