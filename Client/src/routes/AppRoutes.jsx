@@ -4,12 +4,11 @@ import Blogs from "../pages/Blogs";
 import Login from "../components/admin/Login";
 import Dashboard from "../pages/private/Dashboard";
 import Register from "../components/admin/Register";
-
-
 import { useAuth } from "../context/AuthContext";
 import Loader from "../components/Loader";
 import Layout from "../layout/Layout";
 import ProtectedRoute from "../components/ProtectedRoute";
+import AuthRedirect from "../components/AuthRedirect";
 
 function AppRoutes() {
   const { loading, initialized } = useAuth();
@@ -40,9 +39,23 @@ function AppRoutes() {
         }
       />
 
-      {/* Auth routes without layout */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      {/* Auth routes without layout - redirect if already logged in */}
+      <Route
+        path="/login"
+        element={
+          <AuthRedirect>
+            <Login />
+          </AuthRedirect>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <AuthRedirect>
+            <Register />
+          </AuthRedirect>
+        }
+      />
 
       {/* Protected routes with layout */}
       <Route
