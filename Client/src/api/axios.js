@@ -10,19 +10,27 @@ API.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
     if (
-      error.response.status === 401 &&
+      error.response?.status === 401 &&
       !originalRequest._retry &&
       document.cookie.includes("refreshToken")
     ) {
       originalRequest._retry = true;
+
       try {
-        await API.post("/refresh");
+        // Try to refresh the token
+        await API.post("/auth/refresh");
+        // Retry the original request
         return API(originalRequest);
-      } catch {
+      } catch (refreshError) {
+        // If refresh fails, redirect to login
+        console.log("Token refresh failed, redirecting to login");
         window.location.href = "/login";
+        return Promise.reject(refreshError);
       }
     }
+
     return Promise.reject(error);
   }
 );

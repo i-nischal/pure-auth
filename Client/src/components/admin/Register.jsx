@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { registerUser } from "../../api/authAPI";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 function Register() {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [registerData, setRegisterData] = useState({
     name: "",
     email: "",
@@ -11,15 +13,22 @@ function Register() {
     confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setRegisterData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (error) setError("");
   };
 
   const validatePassword = () => {
     if (registerData.password !== registerData.confirmPassword) {
-      alert("Password mismatch");
+      setError("Passwords do not match");
+      return false;
+    }
+    if (registerData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
       return false;
     }
     return true;
@@ -31,14 +40,22 @@ function Register() {
 
     try {
       setLoading(true);
+      setError("");
       const { name, email, password } = registerData;
 
-      const res = await registerUser({ name, email, password });
-      if (res.ok) {
-        navigate("/");
+      const response = await registerUser({ name, email, password });
+      
+      if (response.status === "success") {
+        // Set user in context
+        setUser(response.payload.user);
+        console.log("Registration successful:", response);
+        navigate("/dashboard");
+      } else {
+        setError(response.message || "Registration failed");
       }
     } catch (error) {
-      console.log("Failed to register:", error.response?.data || error.message);
+      console.log("Registration failed:", error.response?.data || error.message);
+      setError(error.response?.data?.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -48,12 +65,19 @@ function Register() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-          Register
+          Create Account
         </h2>
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-gray-700 mb-1" htmlFor="name">
-              Name
+              Full Name
             </label>
             <input
               type="text"
@@ -61,14 +85,14 @@ function Register() {
               id="name"
               value={registerData.name}
               onChange={handleChange}
-              placeholder="Enter your name"
+              placeholder="Enter your full name"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
             />
           </div>
           <div>
             <label className="block text-gray-700 mb-1" htmlFor="email">
-              Email
+              Email Address
             </label>
             <input
               type="email"
@@ -94,6 +118,7 @@ function Register() {
               placeholder="Enter your password"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
+              minLength="6"
             />
           </div>
           <div>
@@ -126,13 +151,25 @@ function Register() {
             {loading ? (
               <div className="flex items-center justify-center gap-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Registering...</span>
+                <span>Creating Account...</span>
               </div>
             ) : (
-              "Register"
+              "Create Account"
             )}
           </button>
         </form>
+        
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Already have an account?{" "}
+            <button
+              onClick={() => navigate("/login")}
+              className="text-blue-500 hover:text-blue-600 font-medium"
+            >
+              Sign In
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

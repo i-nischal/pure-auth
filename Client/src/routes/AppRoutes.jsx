@@ -1,35 +1,63 @@
-import { Navigate, Route, Routes, Outlet } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import Home from "../pages/public/Home";
 import Blogs from "../pages/Blogs";
 import Login from "../components/admin/Login";
 import Dashboard from "../pages/private/Dashboard";
 import Register from "../components/admin/Register";
+
+
 import { useAuth } from "../context/AuthContext";
+import Loader from "../components/Loader";
+import Layout from "../layout/Layout";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 function AppRoutes() {
-  const { user } = useAuth();
+  const { loading, initialized } = useAuth();
 
-  // PrivateRoute must render Outlet for nested routes to work
-  const PrivateRoute = () => {
-    return user ? <Outlet /> : <Navigate to="/login" replace />;
-  };
+  // Show loader while initializing auth
+  if (!initialized || loading) {
+    return <Loader />;
+  }
 
   return (
     <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<Home />} />
-      <Route path="/blogs" element={<Blogs />} />
+      {/* Public routes with layout */}
+      <Route
+        path="/"
+        element={
+          <Layout>
+            <Home />
+          </Layout>
+        }
+      />
+
+      <Route
+        path="/blogs"
+        element={
+          <Layout>
+            <Blogs />
+          </Layout>
+        }
+      />
+
+      {/* Auth routes without layout */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Private routes Grouping */}
-      <Route element={<PrivateRoute />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        {/* Add all other private routes here */}
-      </Route>
+      {/* Protected routes with layout */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Dashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
-      {/* Optional: Catch-all route for 404 */}
-      {/* <Route path="*" element={<div>404 Not Found</div>} /> */}
+      {/* Catch-all route */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

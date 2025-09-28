@@ -11,29 +11,33 @@ function Login() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setLoginData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (error) setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
+    
     try {
-      const res = await loginUser(loginData); // first await the API
-      const data = res.data; // then access data
+      const response = await loginUser(loginData);
 
-      if (data.status === "success") {
-        setUser(data.payload.user); // update context
-        console.log("Login successful:", data);
-        navigate("/dashboard"); // navigate after successful login
+      if (response.status === "success") {
+        setUser(response.payload.user);
+        console.log("Login successful:", response);
+        navigate("/dashboard");
       } else {
-        alert(data.message);
+        setError(response.message || "Login failed");
       }
     } catch (error) {
-      console.log("Failed to login:", error.response?.data || error.message);
-      alert(error.response?.data?.message || error.message);
+      console.log("Login failed:", error.response?.data || error.message);
+      setError(error.response?.data?.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -43,12 +47,19 @@ function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-          Login
+          Welcome Back
         </h2>
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-gray-700 mb-1" htmlFor="email">
-              Email
+              Email Address
             </label>
             <input
               type="email"
@@ -88,13 +99,25 @@ function Login() {
             {loading ? (
               <div className="flex items-center justify-center gap-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Logging in...</span>
+                <span>Signing In...</span>
               </div>
             ) : (
-              "Login"
+              "Sign In"
             )}
           </button>
         </form>
+        
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Don't have an account?{" "}
+            <button
+              onClick={() => navigate("/register")}
+              className="text-blue-500 hover:text-blue-600 font-medium"
+            >
+              Sign Up
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
