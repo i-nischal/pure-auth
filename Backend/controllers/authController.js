@@ -14,7 +14,7 @@ export const registerUser = async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = await User.create({ name, email, password: hashedPassword });
 
-  user.setTokenCookies(res);
+  await user.setTokenCookies(res); // ✅ Now awaited
   api.success("User registered successfully", { user: user.toResponse() });
 };
 
@@ -28,7 +28,7 @@ export const loginUser = async (req, res) => {
     return api.error("Invalid credentials", 400);
   }
 
-  user.setTokenCookies(res);
+  await user.setTokenCookies(res); // ✅ Now awaited
   api.success("Login successful", { user: user.toResponse() });
 };
 
@@ -36,6 +36,7 @@ export const loginUser = async (req, res) => {
 export const refreshToken = async (req, res) => {
   const api = new ApiResponse(res);
   const token = req.cookies.refreshToken;
+
   if (!token) return api.error("No refresh token", 401);
 
   try {
@@ -46,13 +47,20 @@ export const refreshToken = async (req, res) => {
       return api.error("Invalid refresh token", 401);
     }
 
+    // Generate new access token
     const accessToken = user.generateAccessToken();
+
+    // Set new access token cookie
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      maxAge: 59 * 60 * 1000,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000, // ✅ 15 minutes
     });
+
     api.success("Access token refreshed");
   } catch (err) {
+    console.error("Refresh token error:", err);
     api.error("Refresh token expired", 401);
   }
 };

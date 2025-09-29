@@ -22,28 +22,35 @@ userSchema.methods.generateAccessToken = function () {
   });
 };
 
-// Generate refresh token
-userSchema.methods.generateRefreshToken = function () {
+// Generate refresh token (now async and awaits save)
+userSchema.methods.generateRefreshToken = async function () {
   const token = jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
     expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
   });
   this.refreshTokens.push({ token, createdAt: new Date() });
-  this.save();
+  await this.save(); // ✅ Now properly awaited
   return token;
 };
 
-// Set cookies
-userSchema.methods.setTokenCookies = function (res) {
+// Set cookies (now async)
+userSchema.methods.setTokenCookies = async function (res) {
   const accessToken = this.generateAccessToken();
-  const refreshToken = this.generateRefreshToken();
+  const refreshToken = await this.generateRefreshToken(); // ✅ Await the async method
 
+  // Access token expires in 15 minutes (shorter than JWT expiry)
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    maxAge: 59 * 60 * 1000,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 15 * 60 * 1000, // ✅ 15 minutes - shorter than 59m JWT
   });
+
+  // Refresh token expires in 30 days
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 };
 
