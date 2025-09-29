@@ -1,11 +1,10 @@
 import User from "../models/UserClass.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 // Register
-export const registerUser = asyncHandler(async (req, res) => {
+export const registerUser = async (req, res) => {
   const api = new ApiResponse(res);
   const { name, email, password } = req.body;
 
@@ -17,10 +16,10 @@ export const registerUser = asyncHandler(async (req, res) => {
 
   user.setTokenCookies(res);
   api.success("User registered successfully", { user: user.toResponse() });
-});
+};
 
 // Login
-export const loginUser = asyncHandler(async (req, res) => {
+export const loginUser = async (req, res) => {
   const api = new ApiResponse(res);
   const { email, password } = req.body;
 
@@ -31,10 +30,10 @@ export const loginUser = asyncHandler(async (req, res) => {
 
   user.setTokenCookies(res);
   api.success("Login successful", { user: user.toResponse() });
-});
+};
 
 // Refresh token
-export const refreshToken = asyncHandler(async (req, res) => {
+export const refreshToken = async (req, res) => {
   const api = new ApiResponse(res);
   const token = req.cookies.refreshToken;
   if (!token) return api.error("No refresh token", 401);
@@ -56,10 +55,10 @@ export const refreshToken = asyncHandler(async (req, res) => {
   } catch (err) {
     api.error("Refresh token expired", 401);
   }
-});
+};
 
 // Logout
-export const logoutUser = asyncHandler(async (req, res) => {
+export const logoutUser = async (req, res) => {
   const api = new ApiResponse(res);
   const refreshToken = req.cookies.refreshToken;
 
@@ -77,7 +76,7 @@ export const logoutUser = asyncHandler(async (req, res) => {
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
   api.success("Logged out successfully");
-});
+};
 
 export const getCurrentUser = (req, res) => {
   const api = new ApiResponse(res);

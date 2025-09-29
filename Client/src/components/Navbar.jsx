@@ -22,7 +22,7 @@ function Navbar() {
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="font-bold text-xl">
           <Link to="/" className="hover:text-blue-200 transition">
-            MyApp
+            PureAuth
           </Link>
         </div>
 
