@@ -46,11 +46,12 @@ export const getCurrentUser = async () => {
       user: response.data.payload?.user,
     };
   } catch (error) {
-    console.error(
-      "Fetching current user failed:",
-      error.response?.data || error.message
-    );
+    if (error.response?.status !== 401) {
+      console.error(
+        "Fetching current user failed:",
+        error.response?.data || error.message
+      );
+    }
     throw error;
   }
 };
-

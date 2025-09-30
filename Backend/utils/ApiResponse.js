@@ -7,7 +7,7 @@ export class ApiResponse {
     return this.res.status(code).json({
       status: "success",
       message,
-      payload
+      payload,
     });
   }
 
@@ -15,7 +15,7 @@ export class ApiResponse {
     return this.res.status(code).json({
       status: "error",
       message,
-      payload
+      payload,
     });
   }
 }

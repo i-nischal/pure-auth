@@ -22,7 +22,7 @@ userSchema.methods.generateAccessToken = function () {
   });
 };
 
-// Generate refresh token (now async and awaits save)
+// Generate refresh token 
 userSchema.methods.generateRefreshToken = async function () {
   const token = jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
     expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
@@ -34,7 +34,7 @@ userSchema.methods.generateRefreshToken = async function () {
 
 // Set cookies (now async)
 userSchema.methods.setTokenCookies = async function (res) {
-  const accessToken = this.generateAccessToken();
+  const accessToken = await this.generateAccessToken();
   const refreshToken = await this.generateRefreshToken(); // ✅ Await the async method
 
   // Access token expires in 15 minutes (shorter than JWT expiry)

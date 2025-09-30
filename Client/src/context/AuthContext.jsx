@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
         console.log("❌ No user found");
       }
     } catch (error) {
-      console.log("Failed to fetch current user:", error.message);
+      // console.log("Failed to fetch current user:", error.message);
       setUser(null);
     } finally {
       setLoading(false);

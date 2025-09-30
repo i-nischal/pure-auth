@@ -24,9 +24,9 @@ app.get("/api/protected", authMiddleware, (req, res) => {
 const startServer = async () => {
   try {
     await connectDB();
-
-    app.listen(process.env.PORT, () => {
-      console.log(`Server running on port: http://localhost:${process.env.PORT}`);
+    const PORT = process.env.PORT || 5001;
+    app.listen(PORT, () => {
+      console.log(`Server running on port: http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error("Connection failed", error);
